@@ -2,11 +2,12 @@
 
 import * as z from "zod";
 import axios from "axios";
-import { MessageSquare } from "lucide-react";
+import { Code } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChatCompletionRequestMessage } from "openai";
+import ReactMarkdown from "react-markdown";
 
 import { BotAvatar } from "@/components/bot-avatar";
 import { Heading } from "@/components/heading";
@@ -22,7 +23,7 @@ import { Empty } from "@/components/empty";
 
 import { formSchema } from "./constants";
 
-const ConversationPage = () => {
+const CodePage = () => {
     const router = useRouter();
     const [messages, setMessages] = useState<ChatCompletionRequestMessage[]>([]);
 
@@ -37,15 +38,12 @@ const ConversationPage = () => {
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try {
-            const userMessage: ChatCompletionRequestMessage = {
-                role: "user",
-                content: values.prompt
-            };
+            const userMessage: ChatCompletionRequestMessage = { role: "user", content: values.prompt };
             const newMessages = [...messages, userMessage];
-            console.log(newMessages);
-            const response = await axios.post('/api/conversation', { messages: newMessages });
-            setMessages((current) => [...current, userMessage, ...response.data.messages]);
-            console.log(response.data.messages);
+
+            const response = await axios.post('/api/code', { messages: newMessages });
+            setMessages((current) => [...current, userMessage, response.data]);
+
             form.reset();
         } catch (error: any) {
             console.error(error);
@@ -57,11 +55,11 @@ const ConversationPage = () => {
     return (
         <div>
             <Heading
-                title="Conversation"
-                description="Our most advanced conversation model."
-                icon={MessageSquare}
-                iconColor="text-violet-500"
-                bgColor="bg-violet-500/10"
+                title="Code Generation"
+                description="Generate code using descriptive text"
+                icon={Code}
+                iconColor="text-green-700"
+                bgColor="bg-green-700/10"
             />
             <div className="px-4 lg:px-8">
                 <div>
@@ -78,7 +76,7 @@ const ConversationPage = () => {
                                             <Input
                                                 className="border-0 outline-none focus-visible:ring-0 focus-visible:ring-transparent"
                                                 disabled={isLoading}
-                                                placeholder="How do I calculate the radius of a circle?"
+                                                placeholder="Simple Toogle Button using react hooks"
                                                 {...field}
                                             />
                                         </FormControl>
@@ -110,16 +108,26 @@ const ConversationPage = () => {
                                 )}
                             >
                                 {message.role === "user" ? <UserAvatar /> : <BotAvatar />}
-                                <p className="text-sm">
-                                    {message.content}
-                                </p>
+                                <ReactMarkdown components={{
+                                    pre: ({ node, ...props }) => (
+                                        <div className="w-full p-2 my-2 overflow-auto rounded-lg bg-black/10">
+                                            <pre {...props} />
+                                        </div>
+                                    ),
+                                    code: ({ node, ...props }) => (
+                                        <code className="p-1 rounded-lg bg-black/10" {...props} />
+                                    )
+
+                                }} className="overflow-hidden text-sm leading-7">
+                                    {message.content || ""}
+                                </ReactMarkdown>
                             </div>
                         ))}
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
 
-export default ConversationPage;
+export default CodePage;
