@@ -5,7 +5,12 @@ import { Button } from '@/components/ui/button';
 import { MenuIcon } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import Sidebar from '@/components/sidebar';
-const MobileSidebar = () => {
+
+interface MobileSidebarProps {
+    apiLimitCount: number
+    isPro: boolean
+}
+const MobileSidebar = ({ apiLimitCount = 0, isPro = false }: MobileSidebarProps) => {
     // solved hydration error
     const [isMounted, setIsMounted] = React.useState(false)
     React.useEffect(() => {
@@ -21,7 +26,7 @@ const MobileSidebar = () => {
                 </Button>
             </SheetTrigger>
             <SheetContent side={"left"} className='p-0'>
-                <Sidebar />
+                <Sidebar isPro={isPro} apiLimitCount={apiLimitCount} />
             </SheetContent>
         </Sheet>
     )

@@ -2,13 +2,10 @@
 
 import * as z from "zod";
 import axios from "axios";
-import { MessageSquare } from "lucide-react";
+import { VideoIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChatCompletionRequestMessage } from "openai";
-
-import { BotAvatar } from "@/components/bot-avatar";
 import { Heading } from "@/components/heading";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,18 +13,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
 import { Loader } from "@/components/loader";
-import { UserAvatar } from "@/components/user-avatar";
 import { Empty } from "@/components/empty";
 
 
 import { formSchema } from "./constants";
 import { useProModal } from "@/hooks/use-pro-modal";
-import { toast } from "react-hot-toast";
+import toast from "react-hot-toast";
 
-const ConversationPage = () => {
+const VideoPage = () => {
     const proModal = useProModal();
     const router = useRouter();
-    const [messages, setMessages] = useState<ChatCompletionRequestMessage[]>([]);
+    const [video, setVideo] = useState<string>();
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -40,14 +36,9 @@ const ConversationPage = () => {
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try {
-            const userMessage: ChatCompletionRequestMessage = {
-                role: "user",
-                content: values.prompt
-            };
-            const newMessages = [...messages, userMessage];
-            console.log(newMessages);
-            const response = await axios.post('/api/conversation', { messages: newMessages });
-            setMessages((current) => [...current, userMessage, response.data]);
+            setVideo(undefined);
+            const response = await axios.post('/api/video', values);
+            setVideo(response.data[0]);
             form.reset();
         } catch (error: any) {
             if (error?.response?.status === 403) {
@@ -63,11 +54,11 @@ const ConversationPage = () => {
     return (
         <div>
             <Heading
-                title="Conversation"
-                description="Our most advanced conversation model."
-                icon={MessageSquare}
-                iconColor="text-violet-500"
-                bgColor="bg-violet-500/10"
+                title="Video Generation"
+                description="Turn your prompt into video"
+                icon={VideoIcon}
+                iconColor="text-orange-700"
+                bgColor="bg-orange-700/10"
             />
             <div className="px-4 lg:px-8">
                 <div>
@@ -84,7 +75,7 @@ const ConversationPage = () => {
                                             <Input
                                                 className="border-0 outline-none focus-visible:ring-0 focus-visible:ring-transparent"
                                                 disabled={isLoading}
-                                                placeholder="How do I calculate the radius of a circle?"
+                                                placeholder="Clown fish swimming around a coral reef"
                                                 {...field}
                                             />
                                         </FormControl>
@@ -103,29 +94,18 @@ const ConversationPage = () => {
                             <Loader />
                         </div>
                     )}
-                    {messages.length === 0 && !isLoading && (
-                        <Empty label="No conversation started." />
+                    {!video && !isLoading && (
+                        <Empty label="No Video Generated." />
                     )}
-                    <div className="flex flex-col-reverse gap-y-4">
-                        {messages.map((message) => (
-                            <div
-                                key={message.content}
-                                className={cn(
-                                    "p-8 w-full flex items-start gap-x-8 rounded-lg",
-                                    message.role === "user" ? "bg-white border border-black/10" : "bg-muted",
-                                )}
-                            >
-                                {message.role === "user" ? <UserAvatar /> : <BotAvatar />}
-                                <p className="text-sm">
-                                    {message.content}
-                                </p>
-                            </div>
-                        ))}
-                    </div>
+                    {video && (
+                        <video controls className="w-full mt-8 bg-black border rounded-lg aspect-video">
+                            <source src={video} />
+                        </video>
+                    )}
                 </div>
             </div>
         </div>
     );
 }
 
-export default ConversationPage;
+export default VideoPage;
