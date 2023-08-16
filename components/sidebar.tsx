@@ -69,7 +69,7 @@ const Sidebar = ({ apiLimitCount = 0, isPro = false }: SidebarProps) => {
             <div className="flex-1 px-3 py-2">
                 <Link href='/dashboard' className='flex items-center pl-3 mb-14'>
                     <div className='relative w-8 h-8 mr-4'>
-                        <Image fill alt='logo' src='/Logo.png' />
+                        <Image fill alt='logo' src='/Logoo.png' />
                     </div>
                     <h1 className={cn('text-2xl font-bold', montserrat.className)}>
                         Brainwave
